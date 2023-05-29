@@ -1,9 +1,10 @@
 .header {
+  width: 90rem;
+  height: 12.5rem;
   background: var(--gray-700);
   display: flex;
   justify-content: center;
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+  align-items: center;
 }
 
 .header img {
