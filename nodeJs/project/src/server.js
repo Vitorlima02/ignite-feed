@@ -2,16 +2,20 @@ import http from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR/index.js';
+import { json } from './middleware/json.js';
+import { Database } from './middleware/database.js';
 
-const tasks = [];
+const database = new Database();
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const { method, url } = req;
 
+  await json(req, res);
+
   if (method === 'GET' && url === '/tasks') {
-    return res
-      .setHeader('Content-Type', 'application/json')
-      .end(JSON.stringify(tasks));
+    const tasks = database.select('tasks');
+    
+    return res.end(JSON.stringify(tasks));
   }
 
   const date = new Date();
@@ -20,15 +24,18 @@ const server = http.createServer((req, res) => {
   })
 
   if (method === 'POST' && url === '/tasks') {
-    tasks.push({
+    const { title, description } = req.body;
+    const tasks = {
       id: randomUUID(),
-      title: 'Fazer exame',
-      description: 'Realizar exame de laboratorio',
+      title,
+      description,
       completed_at: null,
       created_at: formatDate,
       update_at: null,
-    })
-    console.log(tasks);
+    }
+    
+    database.insert('tasks', tasks)
+
     return res.writeHead(201).end();
   }
 
